@@ -1,0 +1,10 @@
+# Name of the Conda environment
+name: pharmstarx
+
+channels:
+
+dependencies:
+  # Exact Python version (good for reproducibility)
+  - python==3.13.12
+
+  - pip
