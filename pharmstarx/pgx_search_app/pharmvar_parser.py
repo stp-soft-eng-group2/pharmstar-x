@@ -1,6 +1,6 @@
 import json
 
-with open("pharmvar_dataset.json", "r") as file:
+with open("data/pharmvar_dataset.json", "r") as file:
     data = json.load(file)
 
 inp = input("Enter the Star allele or name")
