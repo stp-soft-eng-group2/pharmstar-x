@@ -1,14 +1,14 @@
 import json
 from pathlib import Path
 
-def data_load():
+def data_load(path_to_dataset):
     """
 This function loads the Pharmvar json database into memory
 
 Outputs the data structure as the variable data
     """
     # defaults the path to start from the script's directory
-    file_path = Path(__file__).parent.joinpath("data/pharmvar_dataset.json")
+    file_path = Path(__file__).parent.joinpath(path_to_dataset)
     # opens and reads the database 
     with open(file_path, "r") as file:
         # loads the data in json format
@@ -47,7 +47,38 @@ The output is the allele found as a result of the search
     if n == len(data):
         user_dataset = "Un_available" # tells the user their input is unavailable
 
-    print(user_dataset)
+    return user_dataset
+
+def filter(user_dataset, *keys):
+
+    """
+This function filters allele data to the data the user is interested in
+including alleleName, geneSymbol, pvId, function, hgvs, variants,
+url, and references.
+
+The input parameters are user_dataset, *keys:
+
+user_dataset = The primary use is to provide this function with the
+allele retrieved from the Pharmvar json dataset. However, the function is dynamic
+and can work with any object from a json structured dataset.
+
+*keys = a comma seperated list of the keys from a json object that the user is
+interested in.
+
+The output is a filtered version of the allele information set in the form of a 
+list of seperate dictionaries, each representing a field of interest
+    """
+
+    # An empty list to input dictionary fields that the user is interested in
+    filtered_data = []
+
+    # iterates through each outer key in the allele information set
+    for dataset_key in keys:
+
+        # appends the information the user is interested in onto the filtered dictionary array
+        filtered_data.append({dataset_key: user_dataset[dataset_key]})
+        
+    return filtered_data
 
 def main():
     """
@@ -57,7 +88,11 @@ This prevents code being run from the top of the script to the bottom.
 The output is the collection of outputs from the functions called.
     """
 
-    search_star(data_load()) # uses the output of the data_load function as input for search_star
+     # prints the filtered data for the allele the user inputs
+    print(filter(search_star(data_load("data/pharmvar_dataset.json")),
+        'alleleName', 'geneSymbol', 'pvId', 'function', 'hgvs',
+        'variants', 'url', 'references'    
+    ))
 
 if __name__ == '__main__':
     main()
