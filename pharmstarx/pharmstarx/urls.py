@@ -15,8 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+from django.views.generic import RedirectView
 
 urlpatterns = [
+    path("", RedirectView.as_view(url="/pgx_search_app/", permanent=False)), 
+    #added this path as manage.py run server does not auto open the pgx_search_app
+    path('', include('pgx_search_app.urls')), 
+    #this code didnt work, fix later EF 5/11/26
     path('admin/', admin.site.urls),
 ]
