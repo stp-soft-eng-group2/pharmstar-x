@@ -17,7 +17,9 @@ Output =  summary of annotation in dictinary format
 """
 
 import csv
+import logging
 from tsv_loader import load_tsv
+logger = logging.getLogger(__name__)
 
 
 
@@ -25,17 +27,18 @@ def get_summary_annotation(star_allele):
 
     """
     Gets relevant info and summary annotation ID
-
     Input: Star Allele in format i.e CYP2C19*3
-   
-
     Output: list of Dictionary of summary record
     """
 
-    #load list of dataset
-    annotation_records = load_tsv("summary_annotations.tsv")
+    try:
+        #load list of dataset
+        annotation_records = load_tsv("summary_annotations.tsv")
+    except (csv.Error):
+        logger.error(Could not load summary_annotations.tsv)
+        raise
 
-    #empty list to load dict with relevant information
+        #empty list to load dict with relevant information
     summary_annotation_list = []
 
     #list record that can have more than one haplotype
@@ -70,26 +73,25 @@ def get_allele_summary(summary_annotation_list, allele_star):
     - drug chemical 
     - associated function and metabolism
     """
-    
+
     #got  Copilot AI to help solve issue of output of allele_summary into Allele Matches. if more than 1 summary annotation id
     summaries_by_id = {}
 
     for record in summary_annotation_list:
         annotation_id = record["Summary Annotation ID"].strip()
         summaries_by_id[annotation_id] = record
-    
-
-    #load list of dataset
-    allele_summary_records = load_tsv("summary_ann_alleles.tsv")
+        
+    try:
+        #load list of dataset
+        allele_summary_records = load_tsv("summary_ann_alleles.tsv")
+    except (csv.Error):
+        logger.error(Could not load summary_ann_alleles.tsv)
+        raise
 
 
     for record in allele_summary_records:
-
         annotation_id = record["Summary Annotation ID"].strip()
-
-        #had copilot AI suggest solve issue of reading *20s together with *2 in the summary allele file
         genotype = record["Genotype/Allele"]
-
 
             
         #filter record if annotation id matches and allele star present in record
@@ -103,24 +105,33 @@ def get_allele_summary(summary_annotation_list, allele_star):
     return [record for record in summary_annotation_list if record["Allele Matches"]]
 
 
-def search_summary_annotations(allele):
+def search_summary_annotations(star_allele):
 
     """
     combines get_summary_annotation_list and get_allele_summary
     cleans query and separates gene from star
     """
-    #remove whitespaces
-    clean_allele = allele.strip()
+
+    logger.info("Starting search for summary annotation..")
+    #remove whitespaces    
+    clean_allele = star_allele.strip()
 
     # separates * to use as inout in get_allele_summary function
-    allele_gene, star = clean_allele.split("*", 1)
-    allele_star = "*" + star
+    gene, separator, star = clean_allele.partition("*")
+    allele_star = separator + star
+
+    if not separator or not gene.strip() or not star.strip() or "*" in star:
+        raise ValueError("wrong allele format: GENE*ALLELE")
 
     summary_list = get_summary_annotation(clean_allele)
+    if not summary_list:
+        return []
+    
+    matches = get_allele_summary(summary_list, allele_star)
+    if not matches:
+        logger.warning ("No summary allele annotation for: %s, allele")
+        return []
 
-    return get_allele_summary(summary_list, allele_star)
+    logger.info("Summary Annotations successfully obtained for %s" , star_allele)
+    return matches
 
-"""
-from pprint import pprint
-
-pprint(search_summary_annotations("CYP2C19*5"),  sort_dicts=False)"""

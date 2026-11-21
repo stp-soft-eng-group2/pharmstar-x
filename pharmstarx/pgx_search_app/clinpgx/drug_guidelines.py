@@ -15,6 +15,9 @@ and outputs:
 """
 
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_guidelines(chemical_id, gene_id):
     """
@@ -23,13 +26,14 @@ def get_guidelines(chemical_id, gene_id):
     from CPIC and DPWG guidelines
     for drug-chemical relationship
     """
-
+    logger.info("calling ClinPGX API request for guideline info...")
     guideline_list = []
 
     url = "https://api.clinpgx.org/v1/data/guidelineAnnotation"
     
     sources = ["cpic" , "dpwg"]    
     
+    #loops through each source
     for source in sources:
         
         params = {
@@ -43,28 +47,44 @@ def get_guidelines(chemical_id, gene_id):
             "accept" : "*/*"
         }
     
-        response = requests.get(
-            url=url,
-            params=params,
-            headers=headers
-        )
+        try:
+            response = requests.get(
+                url=url,
+                params=params,
+                headers=headers,
+                timeout=30
+            )
 
-        response.raise_for_status()
+            response.raise_for_status()
 
-        data = response.json()
+            data = response.json()
 
+        except requests.RequestException:
+            logger.exception(
+                "ClinPGx guideline request failed for: %s and %s",chemical_id,gene_id)
+            raise
+
+        #had ai fix for me due to an error if file returns empty url, added a loop, if not return[]
         for record in data['data']:
+            literature_file = next(
+                (
+                    literature.get('_sameAs')
+                    for literature in (record.get('literature') or [])
+                    if literature.get('_sameAs')
+                ),
+                None
+            )
             guideline_list.append({
                 'source': source,
                 'guideline_id': record['id'],
                 'guideline_title': record['name'],
-                'literature_file': record['literature'][0]['_sameAs'],
+                'literature_file': literature_file,
                 'related_drug': record['relatedChemicals'],
                 'related_gene': record['relatedGenes']
             })
-
+    
+    logger.info("API request successfully obtained guideline records")
+    
     return guideline_list
-
-
 
 

@@ -13,7 +13,10 @@ It outputs a summary of:
 """
 
 import csv
+import logging
 from tsv_loader import load_tsv
+
+logger = logging.getLogger(__name__)
 
 def get_drug_label_information(drug_name, gene_name):
     """
@@ -21,8 +24,13 @@ def get_drug_label_information(drug_name, gene_name):
     relevant to drug label annotation
     """
 
-    #opens the csv file and puts it into a dict to search using python
-    drug_label_records = load_tsv("drugLabels.tsv")
+    logger.info("Obtaining drug label info from drugLabels.tsv..")
+    try:
+        #opens the csv file and puts it into a dict to search using python
+        drug_label_records = load_tsv("drugLabels.tsv")
+    except(csv.Error):
+        logger.error("Could not load summary_annotations.tsv")
+        raise
 
     drug_label_list = []
 
@@ -39,4 +47,8 @@ def get_drug_label_information(drug_name, gene_name):
                 'Genes': record['Genes'],
                 'Variants/Haplotypes': record['Variants/Haplotypes']
                 })
+    
+    logger.info("Successfully created druglabel records list")
+    
     return drug_label_list
+

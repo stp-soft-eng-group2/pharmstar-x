@@ -29,7 +29,9 @@ from gene_drug_relationship import get_relationship
 from drug_label import get_drug_label_information
 from var_drug_summary import (get_summary_annotation , get_allele_summary, search_summary_annotations)
 from drug_guidelines import get_guidelines
+import logging
 
+logger = logging.getLogger(__name__)
 
 def get_clinpgx_data(star_allele):
     """
@@ -37,15 +39,21 @@ def get_clinpgx_data(star_allele):
     and collates the relevant information for one star allele
     into json formatted file
     """
-
+    logger.info("Creating ClinPGX dictionary..")
+    #creates the dictionary output format
     output = {
         "star_allele": star_allele,
         "variant_summary": [],
     }
 
-    variant_summary_records = search_summary_annotations(star_allele)
+    try:
+        variant_summary_records = search_summary_annotations(star_allele)
+    except ValueError:
+        logger.exception("Invalid star allele: %s", star_allele)
+        raise
 
     for record in variant_summary_records:
+        logger.info("Obtaining drug variant info...")
         clean_summary = {
             "drug": record["Drug(s)"],
             "level_of_evidence": record["Level of Evidence"],
@@ -54,7 +62,7 @@ def get_clinpgx_data(star_allele):
             "drug_labels": [],
             "guidelines": []
         }
-
+        #combine variant summary and extract drug and gene record
         output["variant_summary"].append(clean_summary)
 
         gene_name = record["Gene"]
@@ -64,13 +72,14 @@ def get_clinpgx_data(star_allele):
                 drug_name,
                 gene_name
             )
-
+        #combines drug label record using durg and gene record from variant summary
         for record in drug_label_record:
+            logger.info("Obtaining drug label info...")
             clean_summary["drug_labels"].append({
                 "source": record["Source"],
                 "PGX Level": record["Testing Level"]
             })
-
+        #combine guidelines through relationship records
         relationships = get_relationship(
             drug_name,
             gene_name
@@ -83,11 +92,15 @@ def get_clinpgx_data(star_allele):
                 )
 
             for record in guidelines_record:
+                logger.info("Obtaining guideline info...")
                 clean_summary["guidelines"].append({
                     "source": record["source"],
                     "title": record["guideline_title"],
                     "literature_link": record["literature_file"]
                 })
+    
+    logger.info("Successfully created ClinPGX dictionary for star allele %s", star_allele,)
 
     return output
     
+
