@@ -126,3 +126,45 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+
+# Logging
+# https://docs.djangoproject.com/en/6.1/howto/logging/
+LOGGING = {
+    "version": 1, #dictConfig format version
+    "disable_existing_loggers": False, #retain default loggers
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+            "level": "INFO",
+        }
+        "file": 
+            "class": "logging.handlers.RotatiingFileHandler", #use rotating filehandler
+            "filename": "pharmstarx.log",
+            "maxBytes": 1024 * 1024 ,
+            "backupCount": 3,
+            "level": "WARNING",
+            "formatter": "standard",
+        },
+    },
+    "loggers": {
+        "pgx_search_app": { #process all loggers into handler, unless specified #do we wanna specify or not?
+            "level": "DEBUG",
+            "handlers": ["file"],
+            "propagate": False, #how to both have on terminal and log file
+        },
+    }
+    "formatters": { 
+        "standard": {
+            "format": "{asctime} {levelname} ({name}: {lineno}) - {message}" ,
+            "style": "{",
+        },
+        "simple": {
+            "format": "{asctime} {levelname} {module} {message}",
+            "style": "{",
+        },
+
+    } 
+
+}
