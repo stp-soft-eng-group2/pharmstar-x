@@ -139,7 +139,7 @@ LOGGING = {
             "formatter": "simple",
             "level": "INFO",
         }
-        "file": 
+        "file": {
             "class": "logging.handlers.RotatiingFileHandler", #use rotating filehandler
             "filename": "pharmstarx.log",
             "maxBytes": 1024 * 1024 ,
