@@ -1,0 +1,19 @@
+#following https://setuptools.pypa.io/en/latest/userguide/quickstart.html
+
+#declares build system dependencies. which library
+[build system]
+requires = ["setuptools"]
+#version?
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pharmstarx"
+version = "0.0.1"
+requires-python = ">=3.13"
+dynamic = ["dependencies"]
+
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+

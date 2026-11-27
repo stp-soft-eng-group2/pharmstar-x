@@ -7,4 +7,4 @@ dependencies:
   # Exact Python version (good for reproducibility)
   - python==3.13.12
 
-  - pip
+  - pip==26.2.2
