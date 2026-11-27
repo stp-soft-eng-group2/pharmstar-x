@@ -138,7 +138,7 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "simple",
             "level": "INFO",
-        }
+        },
         "file": {
             "class": "logging.handlers.RotatingFileHandler", #use rotating filehandler
             "filename": "pharmstarx.log",
@@ -154,7 +154,7 @@ LOGGING = {
             "handlers": ["file"],
             "propagate": False, #how to both have on terminal and log file
         },
-    }
+    },
     "formatters": { 
         "standard": {
             "format": "{asctime} {levelname} ({name}: {lineno}) - {message}" ,
